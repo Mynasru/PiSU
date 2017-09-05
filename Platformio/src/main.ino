@@ -13,6 +13,8 @@
 #define pressToHrdShdnTime 8000 //ms to press before a hard power shutdown occurs.
 #define pressToRebootTime 4000 //ms to press to reset the pi.
 #define debounceTime 50
+#define restartHoldTime 250+debounceTime //ms to keep pi pin active to reboot
+#define powerdownHoldTime 1000+debounceTime //ms to keep pi pin active to powerdown
 #define standbyFadeTime 50
 #define startupBlinkTime 100
 #define shutdownBlinkTime 250
@@ -69,9 +71,6 @@ void shutdownFunc(){
     delay(shutdownBlinkTime);
     if(tempbootPinState==HIGH && digitalRead(PI_BOOT_OK_PIN)==HIGH){
       shutdownnow = HIGH;
-    }
-    else{
-      shutdownnow = LOW;
     }
   } while(shutdownnow==LOW);
 }
@@ -205,6 +204,8 @@ void loop(){
     case shutdownState:
       {
         digitalWrite(PI_SHUTDOWN_PIN,HIGH);
+        delay(powerdownHoldTime);
+        digitalWrite(PI_SHUTDOWN_PIN, LOW);
 
         digitalWrite(INDICATOR_LED_R1,HIGH);
         digitalWrite(INDICATOR_LED_R2,LOW);
@@ -256,6 +257,8 @@ void loop(){
     case rebootState:
       {
         digitalWrite(PI_SHUTDOWN_PIN,HIGH);
+        delay(restartHoldTime);
+        digitalWrite(PI_SHUTDOWN_PIN, LOW);
 
         digitalWrite(INDICATOR_LED_R1,LOW);
         digitalWrite(INDICATOR_LED_R2,HIGH);
@@ -270,13 +273,13 @@ void loop(){
         Serial.println("");
 
         delay(5000);
-        digitalWrite(PI_FET_PIN,LOW);
+        //digitalWrite(PI_FET_PIN,LOW);
 
         analogWrite(BUTTON_LED_PIN,0);
         state=startupState;
         delay(2000);
       }
-    break;
+      break;
   }
 }
 
